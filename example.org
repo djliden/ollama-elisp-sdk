@@ -1,0 +1,36 @@
+#+TITLE: Examples and Tests for Elisp Ollama SDK
+
+
+* Initial Tests
+
+#+begin_src emacs-lisp :session ollamatest
+(load-file "./ollama.el")
+#+end_src
+
+#+RESULTS:
+: t
+
+#+begin_src emacs-lisp
+
+;; Correctly define and encode the json payload
+(let ((json-payload '(("model" . "codellama:7b-code"))))
+  ;; Print the payload as a string for debugging purposes
+  (message "%s" (json-encode json-payload))
+  ;; Return the encoded json payload
+  (json-encode json-payload))
+#+end_src
+
+#+RESULTS:
+: {"model":"codellama:7b-code"}
+
+
+#+begin_src emacs-lisp :session ollamatest
+(let ((json-payload '(("model" . "mistral:latest")
+                      ("prompt" . "Why is the sky blue?")
+                      ("stream" . :json-false)
+                      ("options" . (("num_predict" . 25))))))
+  (ollama-send-request "generate" json-payload 'simple-ollama-process-filter))
+#+end_src
+
+#+RESULTS:
+: simple-ollama-process-filter
