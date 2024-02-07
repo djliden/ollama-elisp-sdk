@@ -4,5 +4,7 @@
 
 This project aims to be featureful elisp sdk for [[https://ollama.ai/][Ollama]]. There are existing projects for working with Ollama such as [[https://github.com/zweifisch/ollama][zweifish/ollama]] and [[https://github.com/s-kostyaev/ellama][ellama]]. I want the Elisp Ollama SDK to be a more minimal abstraction over ollama that allows elisp developers to integrate open source (or at least open weight) LLMs into elisp projects using elisp. It will offer much the same level of functionality that the [[https://github.com/ollama/ollama-python][ollama-python]] library offers, but in emacs lisp.
 * Project Status
+** [2024-02-06 Tue]
+I've added a base function for sending requests, a simple process filter for printing the results to a buffer, and specific functions for completions and chat completions that take elisp objects as inputs and pass the correct JSON on to the API. 
 ** [2024-02-04 Sun]
 The project has only just begun! Though I have used ollama via elisp fairly extensively in the past so I expect to make fairly rapid progress.
