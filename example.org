@@ -41,3 +41,14 @@
 #+RESULTS:
 : simple-ollama-process-filter
 
+#+begin_src emacs-lisp
+(ollama-chat "mistral:latest"
+             '((("role" . "system") ("content" . "You are a helpful assistant."))
+               (("role" . "user") ("content" . "Can you help me with my math?")))
+             :options '((temperature . 0.7) (num_predict . 150))
+             :stream :json-false)
+
+#+end_src
+
+#+RESULTS:
+: simple-ollama-process-filter

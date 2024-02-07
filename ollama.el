@@ -69,4 +69,33 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
      "generate" generate-args 'simple-ollama-process-filter)))
 
 
+(defun ollama-chat (model messages &rest args)
+  "Send a chat request to the Ollama API.
+MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
+  ;; Construct the JSON payload with required and optional parameters
+  (let
+      ((chat-args
+        `(("model" . ,model)
+          ("messages" . ,messages) ; Include messages directly
+          ,@
+          (when (plist-member args :format)
+            `(("format" . ,(plist-get args :format))))
+          ,@
+          (when (plist-member args :options)
+            `(("options" . ,(plist-get args :options))))
+          ,@
+          (when (plist-member args :template)
+            `(("template" . ,(plist-get args :template))))
+          ,@
+          (when (plist-member args :stream)
+            `(("stream" . ,(plist-get args :stream))))
+          ,@
+          (when (plist-member args :keep_alive)
+            `(("keep_alive" . ,(plist-get args :keep_alive))))
+          ("stream" . :json-false)))) ; Hardcoded stream option based on your requirement
+    ;; Send the request to the Ollama API
+    (ollama-send-request
+     "chat" chat-args 'simple-ollama-process-filter)))
+
+
 
