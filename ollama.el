@@ -64,7 +64,9 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
              `(("options" . ,(plist-get args :options))))
            ;; `stream` is hardcoded as :json-false based on your requirement
            ("stream" . :json-false))))
-    (message "%s" generate-args)
     ;; Send the request to the Ollama API
     (ollama-send-request
      "generate" generate-args 'simple-ollama-process-filter)))
+
+
+
