@@ -69,7 +69,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
      "generate" generate-args 'simple-ollama-process-filter)))
 
 
-(defun ollama-chat (model messages &rest args)
+(defun ollama-generate-chat-completion (model messages &rest args)
   "Send a chat request to the Ollama API.
 MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
   ;; Construct the JSON payload with required and optional parameters
