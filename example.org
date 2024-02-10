@@ -35,7 +35,10 @@
 #+RESULTS:
 : simple-ollama-process-filter
 #+begin_src emacs-lisp
-(ollama-generate-completion "mistral:latest" "why is the sky blue?" :options '(:num_predict 10))
+(ollama-generate-completion
+ "mistral:latest"
+ "why is the sky blue?"
+ :options '(:num_predict 10))
 #+end_src
 
 #+RESULTS:
