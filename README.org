@@ -24,8 +24,10 @@ This approach makes synchronous (blocking) calls to the Ollama API. This is not 
  :options '(:num_predict 10))
 #+end_src
 
+
 #+RESULTS:
 : ((model . mistral:latest) (created_at . 2024-02-10T20:38:06.174459Z) (response .  The color of the sky appears blue due to a) (done . t) (context . [733 16289 28793 28705 2079 349 272 7212 5045 28804 733 28748 16289 28793 415 3181 302 272 7212 8045 5045 2940 298 264]) (total_duration . 602225083) (load_duration . 3763667) (prompt_eval_count . 15) (prompt_eval_duration . 338273000) (eval_count . 10) (eval_duration . 259223000))
+
 
 #+begin_src emacs-lisp
 (ollama-generate-chat-completion "mistral:latest"
@@ -36,7 +38,6 @@ This approach makes synchronous (blocking) calls to the Ollama API. This is not 
 
 #+end_src
 
-#+RESULTS:
 : ((model . mistral:latest) (created_at . 2024-02-10T20:41:12.576155Z) (message (role . assistant) (content .  Absolutely, I'd be happy to help you with Emacs Lisp (Elisp))) (done . t) (total_duration . 874975000) (load_duration . 941084) (prompt_eval_count . 8) (prompt_eval_duration . 329604000) (eval_count . 20) (eval_duration . 543293000))
 
 ** Asynchronous
@@ -50,8 +51,6 @@ This approach will not block your emacs session. However, it will be revised hea
 
   #+end_src
 
-  #+RESULTS:
-  : simple-ollama-process-filter
 
 #+begin_src emacs-lisp
 (let ((content
@@ -65,7 +64,6 @@ This approach will not block your emacs session. However, it will be revised hea
   (json-parse-string content :object-type 'alist))
 #+end_src
 
-#+RESULTS:
 : ((model . mistral:latest) (created_at . 2024-02-10T21:03:19.47873Z) (response .  The color of the sky appears blue due to a) (done . t) (context . [733 16289 28793 28705 2079 349 272 7212 5045 28804 733 28748 16289 28793 415 3181 302 272 7212 8045 5045 2940 298 264]) (total_duration . 411149208) (load_duration . 543125) (prompt_eval_duration . 152069000) (eval_count . 10) (eval_duration . 258121000))
 
 
@@ -77,8 +75,6 @@ This approach will not block your emacs session. However, it will be revised hea
              :stream :json-false)
   #+end_src
 
-  #+RESULTS:
-  : simple-ollama-process-filter
 
 #+begin_src emacs-lisp
 (let ((content
@@ -92,7 +88,6 @@ This approach will not block your emacs session. However, it will be revised hea
   (json-parse-string content :object-type 'alist))
 #+end_src
 
-#+RESULTS:
 : ((model . mistral:latest) (created_at . 2024-02-10T21:06:53.752073Z) (message (role . assistant) (content .  Absolutely! Emacs Lisp (Elisp) is the scripting language used by Emacs)) (done . t) (total_duration . 811260916) (load_duration . 1109458) (prompt_eval_count . 19) (prompt_eval_duration . 269978000) (eval_count . 20) (eval_duration . 538766000))
 
 * Project Status
