@@ -7,7 +7,72 @@
 
 (defvar ollama-api-base-url "http://localhost:11434/api/")
 
-(defun ollama-send-request (endpoint payload process-filter)
+
+(defun ollama-request (endpoint payload)
+  "Send a synchronous request to the Ollama API."
+  (let ((url (concat ollama-api-base-url endpoint))
+        (url-request-method "POST")
+        (url-request-extra-headers '(("Content-Type" . "application/json")))
+        (url-request-data (json-encode payload)))
+    ;; Send the request
+    (with-current-buffer (url-retrieve-synchronously url)
+      ;; Move to the response body
+      (goto-char url-http-end-of-headers)
+      (forward-line)
+      ;; Parse and return the JSON response
+      (let ((json-object-type 'alist))
+        (json-read)))))
+
+(defun ollama-construct-args (model &rest args)
+  "Construct the argument list for Ollama API calls.
+Include validation to ensure either `prompt` or `messages` is provided, not both."
+  `(("model" . ,model)
+    ,@
+    (when (plist-get args :prompt)
+      `(("prompt" . ,(plist-get args :prompt))))
+    ,@
+    (when (plist-get args :messages)
+      `(("messages" . ,(plist-get args :messages))))
+    ,@
+    (when (plist-member args :system)
+      `(("system" . ,(plist-get args :system))))
+    ,@
+    (when (plist-member args :template)
+      `(("template" . ,(plist-get args :template))))
+    ,@
+    (when (plist-member args :context)
+      `(("context" . ,(plist-get args :context))))
+    ,@
+    (when (plist-member args :stream)
+      `(("stream" . ,(plist-get args :stream))))
+    ,@
+    (when (plist-member args :raw)
+      `(("raw" . ,(plist-get args :raw))))
+    ,@
+    (when (plist-member args :format)
+      `(("format" . ,(plist-get args :format))))
+    ,@
+    (when (plist-member args :options)
+      `(("options" . ,(plist-get args :options))))
+    ("stream" . :json-false)))
+
+
+(defun ollama-generate-completion (model prompt &rest args)
+  "Generate completions using the Ollama API synchronously.
+MODEL and PROMPT are required. ARGS is a plist for optional parameters."
+  (let* ((args (plist-put args :prompt prompt))
+         (generate-args (apply #'ollama-construct-args model args)))
+    (ollama-request "generate" generate-args)))
+
+(defun ollama-generate-chat-completion (model messages &rest args)
+  "Send a chat request to the Ollama API synchronously.
+MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
+  (let* ((args (plist-put args :messages messages))
+         (chat-args (apply #'ollama-construct-args model args)))
+    (ollama-request "chat" chat-args)))
+
+
+(defun ollama-async-request (endpoint payload process-filter)
   "Send a request to the Ollama API."
   (let ((url (concat ollama-api-base-url endpoint))
         (json-payload (json-encode payload)))
@@ -33,65 +98,20 @@
       (when (string-match "\"done\":true" string)
         (message "Ollama completion done.")))))
 
-
-(defun ollama-generate-completion (model prompt &rest args)
+(defun async-ollama-generate-completion (model prompt &rest args)
   "Generate completions using the Ollama API.
 MODEL and PROMPT are required. ARGS is a plist for optional parameters."
-  ;; Construct the JSON payload with optional parameters included if they are provided
-  (let
-      ((generate-args
-        `(("model" . ,model)
-          ("prompt" . ,prompt) ,@
-          (when (plist-member args :system)
-            `(("system" . ,(plist-get args :system))))
-          ,@
-          (when (plist-member args :template)
-            `(("template" . ,(plist-get args :template))))
-          ,@
-          (when (plist-member args :context)
-            `(("context" . ,(plist-get args :context))))
-          ,@
-          (when (plist-member args :stream)
-            `(("stream" . ,(plist-get args :stream))))
-          ,@
-          (when (plist-member args :raw)
-            `(("raw" . ,(plist-get args :raw))))
-          ,@
-          (when (plist-member args :format)
-            `(("format" . ,(plist-get args :format))))
-          ,@
-          (when (plist-member args :options)
-            `(("options" . ,(plist-get args :options))))
-          ("stream" . :json-false)))) ; Hardcoded for now, add stream option later
-    ;; Send the request to the Ollama API
-    (ollama-send-request
+  (let* ((args (plist-put args :prompt prompt))
+         (generate-args (apply #'ollama-construct-args model args)))
+    (ollama-async-request
      "generate" generate-args 'simple-ollama-process-filter)))
 
 
-(defun ollama-generate-chat-completion (model messages &rest args)
+(defun async-ollama-generate-chat-completion (model messages &rest args)
   "Send a chat request to the Ollama API.
 MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
   ;; Construct the JSON payload with required and optional parameters
-  (let
-      ((chat-args
-        `(("model" . ,model)
-          ("messages" . ,messages) ; Include messages directly
-          ,@
-          (when (plist-member args :format)
-            `(("format" . ,(plist-get args :format))))
-          ,@
-          (when (plist-member args :options)
-            `(("options" . ,(plist-get args :options))))
-          ,@
-          (when (plist-member args :template)
-            `(("template" . ,(plist-get args :template))))
-          ,@
-          (when (plist-member args :stream)
-            `(("stream" . ,(plist-get args :stream))))
-          ,@
-          (when (plist-member args :keep_alive)
-            `(("keep_alive" . ,(plist-get args :keep_alive))))
-          ("stream" . :json-false)))) ; Hardcoded for now, eventually add stream option
-    ;; Send the request to the Ollama API
-    (ollama-send-request
+  (let* ((args (plist-put args :messages messages))
+         (chat-args (apply #'ollama-construct-args model args)))
+    (ollama-async-request
      "chat" chat-args 'simple-ollama-process-filter)))
