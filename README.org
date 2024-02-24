@@ -160,6 +160,8 @@ Getting the output from the buffer:
 :  (eval_duration . 759038000))
 
 * Project Status
+** [2024-02-24 Sat]
+I updated the examples in the readme for soem clarity. Next big step is still to refactor the asynchronouc calls and think of a better usage pattern. I also need to add support for embeddings models.
 ** [2024-02-10 Sat]
 I have basic working versions of synchronous and asynchronous calls to the ~generate~ and ~chat~ endpoints, along with examples in the readme.
 
