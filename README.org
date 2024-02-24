@@ -15,31 +15,79 @@ First, clone the repo and load the ~ollama.el~ file.
 
 ** Synchronous
 This approach makes synchronous (blocking) calls to the Ollama API. This is not recommended if you are using a slower model or generating a lot of tokens as it will freeze your emacs session until it is complete.
+*** Completions
 
 
 #+begin_src emacs-lisp
-(ollama-generate-completion
- "mistral:latest"
- "why is the sky blue?"
- :options '(:num_predict 10))
+(pp
+ (ollama-generate-completion
+  "mistral:latest"
+  "why is the sky blue?"
+  :options '(:num_predict 10)))
 #+end_src
 
-: ((model . mistral:latest) (created_at . 2024-02-10T20:38:06.174459Z) (response .  The color of the sky appears blue due to a) (done . t) (context . [733 16289 28793 28705 2079 349 272 7212 5045 28804 733 28748 16289 28793 415 3181 302 272 7212 8045 5045 2940 298 264]) (total_duration . 602225083) (load_duration . 3763667) (prompt_eval_count . 15) (prompt_eval_duration . 338273000) (eval_count . 10) (eval_duration . 259223000))
+#+RESULTS:
+#+begin_example
+((model . "mistral:latest")
+ (created_at . "2024-02-24T14:06:24.157224Z")
+ (response . " The color of the sky appears blue due to a")
+ (done . t)
+ (context .
+          [733 16289 28793 28705 2079 349 272 7212 5045 28804 733 28748 16289 28793 415 3181 302 272 7212 8045 5045 2940 298 264])
+ (total_duration . 7597444792)
+ (load_duration . 7109315792)
+ (prompt_eval_count . 15)
+ (prompt_eval_duration . 176668000)
+ (eval_count . 10)
+ (eval_duration . 310997000))
+#+end_example
+*** Chat Completions
 
+A chat is represented as a list of alists, where each alist contains two key-value pairs: =role= and =content=. The =role= specifies who is speaking (~system~, ~user~, or ~assistant~), and ~content~ contains the message text. For example:
 
 #+begin_src emacs-lisp
-(ollama-generate-chat-completion "mistral:latest"
-             '((("role" . "system") ("content" . "You are a helpful assistant."))
-               (("role" . "user") ("content" . "Can you help me with elisp programming?")))
-             :options '((temperature . 0.7) (num_predict . 20))
-             :stream :json-false)
-
+'((("role" . "system") ("content" . "Initial system message."))
+  (("role" . "user") ("content" . "Can you help me with elisp programming?"))
+  (("role" . "assistant")
+   ("content"
+    .
+    "Absolutely, I'd be happy to help you with Emacs Lisp (Elisp)."))
+  (("role" . "user") ("content" . "Great, how do I start?")))
 #+end_src
 
-: ((model . mistral:latest) (created_at . 2024-02-10T20:41:12.576155Z) (message (role . assistant) (content .  Absolutely, I'd be happy to help you with Emacs Lisp (Elisp))) (done . t) (total_duration . 874975000) (load_duration . 941084) (prompt_eval_count . 8) (prompt_eval_duration . 329604000) (eval_count . 20) (eval_duration . 543293000))
+In the context of the ~ollama-generate-chat-completion~ function, this looks like:
+
+#+begin_src emacs-lisp
+(pp
+ (ollama-generate-chat-completion
+  "mistral:latest"
+  '((("role" . "system") ("content" . "You are a helpful assistant."))
+    (("role" . "user") ("content" . "Can you help me with elisp programming?")))
+  :options '((temperature . 0.7) (num_predict . 20))
+  :stream
+  :json-false))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+((model . "mistral:latest")
+ (created_at . "2024-02-24T14:07:20.0499Z")
+ (message
+  (role . "assistant")
+  (content . " Absolutely, I'll do my best to assist you with Emacs Lisp (Elisp"))
+ (done . t)
+ (total_duration . 1102761667)
+ (load_duration . 1710167)
+ (prompt_eval_count . 19)
+ (prompt_eval_duration . 370450000)
+ (eval_count . 20)
+ (eval_duration . 729234000))
+#+end_example
 
 ** Asynchronous
-This approach will not block your emacs session. However, it will be revised heavily in the near future. I am still working on finding a good usage pattern.
+This approach will not block your emacs session. However, it will be revised heavily in the near future. I am still working on finding a good usage pattern. At present, it prints the output to a buffer called ~*ollama-output*~.
+
+Invoking the function:
 
 #+begin_src emacs-lisp
 (async-ollama-generate-completion
@@ -49,20 +97,38 @@ This approach will not block your emacs session. However, it will be revised hea
 
   #+end_src
 
+  #+RESULTS:
+  : simple-ollama-process-filter
+
+Getting the output from the buffer:
 
 #+begin_src emacs-lisp
-(let ((content
-       (with-current-buffer "*simple-ollama-output*"
-         ;; Capture the buffer's content.
-         (buffer-string))))
-  ;; Clear the buffer after capturing its content.
-  (with-current-buffer "*simple-ollama-output*"
-    (erase-buffer))
-  ;; Ensure json-parse-string returns an alist.
-  (json-parse-string content :object-type 'alist))
+ (let ((content
+        (with-current-buffer "*simple-ollama-output*"
+          ;; Capture the buffer's content.
+          (buffer-string))))
+   ;; Clear the buffer after capturing its content.
+   (with-current-buffer "*simple-ollama-output*"
+     (erase-buffer))
+   ;; Ensure json-parse-string returns an alist.
+   (pp(json-parse-string content :object-type 'alist)))
 #+end_src
 
-: ((model . mistral:latest) (created_at . 2024-02-10T21:03:19.47873Z) (response .  The color of the sky appears blue due to a) (done . t) (context . [733 16289 28793 28705 2079 349 272 7212 5045 28804 733 28748 16289 28793 415 3181 302 272 7212 8045 5045 2940 298 264]) (total_duration . 411149208) (load_duration . 543125) (prompt_eval_duration . 152069000) (eval_count . 10) (eval_duration . 258121000))
+#+RESULTS:
+#+begin_example
+((model . "mistral:latest")
+ (created_at . "2024-02-24T14:22:11.93036Z")
+ (response . " The reason the sky appears blue during a clear day")
+ (done . t)
+ (context .
+          [733 16289 28793 28705 2079 349 272 7212 5045 28804 733 28748 16289 28793 415 2611 272 7212 8045 5045 1938 264 3081 1370])
+ (total_duration . 598230709)
+ (load_duration . 832667)
+ (prompt_eval_count . 11)
+ (prompt_eval_duration . 270784000)
+ (eval_count . 10)
+ (eval_duration . 326263000))
+#+end_example
 
 
 #+begin_src emacs-lisp
@@ -73,6 +139,9 @@ This approach will not block your emacs session. However, it will be revised hea
              :stream :json-false)
   #+end_src
 
+  #+RESULTS:
+  : simple-ollama-process-filter
+
 
 #+begin_src emacs-lisp
 (let ((content
@@ -83,10 +152,23 @@ This approach will not block your emacs session. However, it will be revised hea
   (with-current-buffer "*simple-ollama-output*"
     (erase-buffer))
   ;; Ensure json-parse-string returns an alist.
-  (json-parse-string content :object-type 'alist))
+  (pp(json-parse-string content :object-type 'alist)))
 #+end_src
 
-: ((model . mistral:latest) (created_at . 2024-02-10T21:06:53.752073Z) (message (role . assistant) (content .  Absolutely! Emacs Lisp (Elisp) is the scripting language used by Emacs)) (done . t) (total_duration . 811260916) (load_duration . 1109458) (prompt_eval_count . 19) (prompt_eval_duration . 269978000) (eval_count . 20) (eval_duration . 538766000))
+#+RESULTS:
+#+begin_example
+((model . "mistral:latest")
+ (created_at . "2024-02-24T14:21:28.735154Z")
+ (message
+  (role . "assistant")
+  (content . " Absolutely! Emacs Lisp (Elisp) is the programming language used by Emacs,"))
+ (done . t)
+ (total_duration . 912522583)
+ (load_duration . 623333)
+ (prompt_eval_duration . 152210000)
+ (eval_count . 20)
+ (eval_duration . 759038000))
+#+end_example
 
 * Project Status
 ** [2024-02-10 Sat]
