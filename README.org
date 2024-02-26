@@ -203,7 +203,27 @@ Getting the output from the buffer:
 :             (parameter_size . "3B")
 :             (quantization_level . "Q4_0")))]))
 
+** Show model details
+
+
+#+begin_src emacs-lisp
+(let ((details (ollama-show-model-details "mistral:latest"))
+      (output ""))
+  (dolist (item details output)
+    (setq output (concat output (format "%s\n" (car item)))))
+  output)
+#+end_src
+
+#+RESULTS:
+: license
+: modelfile
+: parameters
+: template
+: details
+
 * Project Status
+** [2024-02-26 Mon]
+Added defuns for (1) listing models; (2) 
 ** [2024-02-25 Sun]
 I revised the async function calls to use the ~url~ library instead of calling on ~curl~. Currently the async requests print the json output to a buffer; a callback can be used to determine what is done with the output. I am still thinking about the best usage pattern here but the ability to define custom callbacks should offer some flexibility.
 ** [2024-02-24 Sat]

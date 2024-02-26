@@ -151,3 +151,24 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
               :false-object nil)))
         (kill-buffer)
         models))))
+
+;; Show model details
+
+(defun ollama-show-model-details (name)
+  "Show details of a single model."
+  (let ((url-request-method "POST")
+        (url (concat ollama-api-base-url "show"))
+        (url-request-extra-headers
+         '(("Content-Type" . "application/json")))
+        (url-request-data (json-encode `(("name" . ,name)))))
+    (with-current-buffer (url-retrieve-synchronously url)
+      (goto-char (point-min))
+      (search-forward "\n\n" nil t)
+      (let ((model-details
+             (json-parse-buffer
+              :object-type 'alist
+              :null-object nil
+              :false-object nil)))
+        (kill-buffer)
+        model-details))))
+      
