@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 ;; ollama.el --- minimal emacs lisp ollama SDK
 
 ;; copyright (C) 2024 Daniel Liden
@@ -72,31 +74,48 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
     (ollama-request "chat" chat-args)))
 
 
-(defun ollama-async-request (endpoint payload process-filter)
-  "Send a request to the Ollama API."
-  (let ((url (concat ollama-api-base-url endpoint))
-        (json-payload (json-encode payload)))
-    (setq ollama-curl-process
-          (start-process "ollama-curl-process"
-                         "*ollama-output*"
-                         "curl"
-                         "-X"
-                         "POST"
-                         url
-                         "-H"
-                         "Content-Type: application/json"
-                         "-d"
-                         json-payload))
-    (set-process-filter ollama-curl-process process-filter)))
+
+(defvar ollama-response-buffer "*ollama-response*")
+
+(defun ollama-store-response-callback (response)
+  "Store the Ollama API response in a dedicated buffer."
+  (with-current-buffer (get-buffer-create ollama-response-buffer)
+    (erase-buffer)
+    (insert (format "%s" response))
+    ))
 
 
-(defun simple-ollama-process-filter (proc string)
-  (let ((buffer-name "*simple-ollama-output*"))
-    (with-current-buffer (get-buffer-create buffer-name)
-      (goto-char (point-max))
-      (insert string)
-      (when (string-match "\"done\":true" string)
-        (message "Ollama completion done.")))))
+(defun ollama-async-request (endpoint payload callback)
+  "Send an asynchronous request to the Ollama API using url-retrieve, returning raw JSON."
+  (let* ((url (concat ollama-api-base-url endpoint))
+         (request-data (json-encode payload))
+         (url-request-method "POST")
+         (url-request-extra-headers
+          '(("Content-Type" . "application/json")))
+         (url-request-data request-data))
+    (url-retrieve
+     url
+     (lambda (status)
+       ;; Move to the start of the buffer to search for the HTTP status code.
+       (goto-char (point-min))
+       (re-search-forward "^HTTP/.* \\([0-9]+\\)" nil t)
+       (let ((code (string-to-number (match-string 1))))
+         (if (= code 200)
+             (progn
+               (goto-char url-http-end-of-headers)
+               (forward-line)
+               (let ((response
+                      (buffer-substring-no-properties
+                       (point) (point-max))))
+                 (kill-buffer) ; Clean up the buffer
+                 ;; Pass the raw JSON response to the callback.
+                 (funcall callback response)))
+           ;; Handle the case where the HTTP status code is not 200.
+           (progn
+             (message "Request failed with code: %s" code)
+             (kill-buffer))))) ; Ensure buffer cleanup on failure
+     nil t t)))
+
 
 (defun async-ollama-generate-completion (model prompt &rest args)
   "Generate completions using the Ollama API.
@@ -104,7 +123,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
   (let* ((args (plist-put args :prompt prompt))
          (generate-args (apply #'ollama-construct-args model args)))
     (ollama-async-request
-     "generate" generate-args 'simple-ollama-process-filter)))
+     "generate" generate-args #'ollama-store-response-callback)))
 
 
 (defun async-ollama-generate-chat-completion (model messages &rest args)
@@ -114,4 +133,4 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
   (let* ((args (plist-put args :messages messages))
          (chat-args (apply #'ollama-construct-args model args)))
     (ollama-async-request
-     "chat" chat-args 'simple-ollama-process-filter)))
+     "chat" chat-args #'ollama-store-response-callback)))

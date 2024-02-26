@@ -65,7 +65,7 @@
   #+end_src
 
   #+RESULTS:
-  : simple-ollama-process-filter
+  : #<buffer  *http localhost:11434*-851604>
 
 #+begin_src emacs-lisp
 (let ((content
@@ -84,11 +84,10 @@
 
 
 #+begin_src emacs-lisp
-(async-ollama-generate-chat-completion "mistral:latest"
-             '((("role" . "system") ("content" . "You are a helpful assistant."))
-               (("role" . "user") ("content" . "Can you help me with elisp programming?")))
-             :options '((temperature . 0.7) (num_predict . 20))
-             :stream :json-false)
+(async-ollama-generate-completion
+ "mistral:latest"
+ "why is the sky blue?"
+ :options '(:num_predict 10))
   #+end_src
 
   #+RESULTS:
