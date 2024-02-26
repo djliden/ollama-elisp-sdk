@@ -79,7 +79,7 @@ In the context of the ~ollama-generate-chat-completion~ function, this looks lik
 :  (eval_count . 20)
 :  (eval_duration . 729234000))
 
-** Asynchronous
+** Asynchronous Completions
 This approach will not block your emacs session. However, it will be revised heavily in the near future. I am still working on finding a good usage pattern. At present, it prints the output to a buffer called ~*ollama-output*~.
 
 Invoking the function:
@@ -158,6 +158,50 @@ Getting the output from the buffer:
 :  (prompt_eval_duration . 265775000)
 :  (eval_count . 20)
 :  (eval_duration . 536168000))
+** List Models
+
+#+begin_src emacs-lisp
+(pp(ollama-list-models))
+#+end_src
+
+: ((models .
+:          [((name . "codellama:7b-code")
+:            (model . "codellama:7b-code")
+:            (modified_at . "2024-02-04T16:07:52.294534262-06:00")
+:            (size . 3825910440)
+:            (digest . "fc84f39375bcfe7612f7636a681ebb13d54eb4466e6ea6da07b5d1c37b49994d")
+:            (details
+:             (parent_model . "")
+:             (format . "gguf")
+:             (family . "llama")
+:             (families)
+:             (parameter_size . "7B")
+:             (quantization_level . "Q4_0")))
+:           ((name . "mistral:latest")
+:            (model . "mistral:latest")
+:            (modified_at . "2024-02-04T16:15:26.947265019-06:00")
+:            (size . 4109865159)
+:            (digest . "61e88e884507ba5e06c49b40e6226884b2a16e872382c2b44a42f2d119d804a5")
+:            (details
+:             (parent_model . "")
+:             (format . "gguf")
+:             (family . "llama")
+:             (families .
+:                       ["llama"])
+:             (parameter_size . "7B")
+:             (quantization_level . "Q4_0")))
+:           ((name . "starcoder:3b")
+:            (model . "starcoder:3b")
+:            (modified_at . "2023-10-14T09:48:30.875745235-05:00")
+:            (size . 1831180251)
+:            (digest . "18be557f0e69f8038d96795492cc55f543d2200bdf611cf29fc5588eb5f31862")
+:            (details
+:             (parent_model . "")
+:             (format . "gguf")
+:             (family . "starcoder")
+:             (families)
+:             (parameter_size . "3B")
+:             (quantization_level . "Q4_0")))]))
 
 * Project Status
 ** [2024-02-25 Sun]

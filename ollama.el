@@ -134,3 +134,20 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
          (chat-args (apply #'ollama-construct-args model args)))
     (ollama-async-request
      "chat" chat-args #'ollama-store-response-callback)))
+
+;; List Models
+
+(defun ollama-list-models ()
+  "List offline models available through Ollama"
+  (let ((url-request-method "GET")
+        (url (concat ollama-api-base-url "tags")))
+    (with-current-buffer (url-retrieve-synchronously url)
+      (goto-char (point-min))
+      (search-forward "\n\n" nil t)
+      (let ((models
+             (json-parse-buffer
+              :object-type 'alist
+              :null-object nil
+              :false-object nil)))
+        (kill-buffer)
+        models))))
