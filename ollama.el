@@ -173,3 +173,34 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
         (kill-buffer)
         model-details))))
       
+(defun ollama-copy-model (source destination)
+  "Copies an existing model, assigning the copy a new name."
+  (let ((url-request-method "POST")
+        (url (concat ollama-api-base-url "copy"))
+        (url-request-extra-headers
+         '(("Content-Type" . "application/json")))
+        (url-request-data
+         (json-encode
+          `(("source" . ,source) ("destination" . ,destination)))))
+    (with-current-buffer (url-retrieve-synchronously url)
+      (goto-char (point-min))
+      (search-forward "\n\n" nil t)
+      (message "%s" (buffer-string))
+      (kill-buffer)
+      nil)))
+
+(defun ollama-delete-model (name)
+  "Copies an existing model, assigning the copy a new name."
+  (let ((url-request-method "DELETE")
+        (url (concat ollama-api-base-url "delete"))
+        (url-request-extra-headers
+         '(("Content-Type" . "application/json")))
+        (url-request-data
+         (json-encode
+          `(("name" . ,name)))))
+    (with-current-buffer (url-retrieve-synchronously url)
+      (goto-char (point-min))
+      (search-forward "\n\n" nil t)
+      (message "%s" (buffer-string))
+      (kill-buffer)
+      nil)))
