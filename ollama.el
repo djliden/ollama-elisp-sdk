@@ -147,6 +147,7 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
       (let ((models
              (json-parse-buffer
               :object-type 'alist
+              :array-type 'list
               :null-object nil
               :false-object nil)))
         (kill-buffer)
