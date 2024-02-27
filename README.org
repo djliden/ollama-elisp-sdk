@@ -202,19 +202,18 @@ Getting the output from the buffer:
   output)
 #+end_src
 
-#+RESULTS:
 : license
 : modelfile
 : parameters
 : template
 : details
+
 ** Copy a Model
 
 #+begin_src emacs-lisp
 (ollama-copy-model "mistral:latest" "mistral-copy-2")
 #+end_src
 
-#+RESULTS:
 
 And now we can list our models to verify that we have made a copy.
 
@@ -245,7 +244,6 @@ Let's delete the model copy.
 (ollama-delete-model "mistral-copy-2")
 #+end_src
 
-#+RESULTS:
 
 And now we can list our models to verify that we have made a copy.
 
@@ -261,7 +259,6 @@ And now we can list our models to verify that we have made a copy.
   output)
 #+end_src
 
-#+RESULTS:
 : codellama:7b-code
 : mistral:latest
 : mistral-copy:latest
