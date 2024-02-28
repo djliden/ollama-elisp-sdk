@@ -245,7 +245,7 @@ Let's delete the model copy.
 #+end_src
 
 
-And now we can list our models to verify that we have made a copy.
+And now we can list our models to verify that we have deleted the copied model
 
 #+begin_src emacs-lisp
 (let
