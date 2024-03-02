@@ -7,7 +7,15 @@
 ;; http://localhost:11434/api/generate
 
 
-(defvar ollama-api-base-url "http://localhost:11434/api/")
+(defcustom ollama-api-base-url "http://localhost:11434/api/"
+  "Base URL for the Ollama API."
+  :type 'string
+  :group 'ollama)
+
+(defgroup ollama nil
+  "Customization group for Ollama."
+  :group 'applications)
+
 
 
 (defun ollama-request (endpoint payload)
