@@ -81,7 +81,13 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
          (chat-args (apply #'ollama-construct-args model args)))
     (ollama-request "chat" chat-args)))
 
-
+(defun ollama-generate-embeddings (model prompt &rest args)
+  "Send an embeddings request to the Ollama API synchronously.
+MODEL and PROMPT are required. ARGS is a plist for optional parameters."
+  (let* ((args (plist-put args :prompt prompt))
+         (embed-args (apply #'ollama-construct-args model args)))
+    (ollama-request "embeddings" embed-args)))
+  
 
 (defvar ollama-response-buffer "*ollama-response*")
 
@@ -142,6 +148,15 @@ MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
          (chat-args (apply #'ollama-construct-args model args)))
     (ollama-async-request
      "chat" chat-args #'ollama-store-response-callback)))
+
+
+(defun async-ollama-generate-embeddings (model prompt &rest args)
+  "Generate completions using the Ollama API.
+MODEL and PROMPT are required. ARGS is a plist for optional parameters."
+  (let* ((args (plist-put args :prompt prompt))
+         (generate-args (apply #'ollama-construct-args model args)))
+    (ollama-async-request
+     "embeddings" generate-args #'ollama-store-response-callback)))
 
 ;; List Models
 

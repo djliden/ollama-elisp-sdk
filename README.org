@@ -78,9 +78,24 @@ In the context of the ~ollama-generate-chat-completion~ function, this looks lik
 :  (prompt_eval_duration . 370450000)
 :  (eval_count . 20)
 :  (eval_duration . 729234000))
+*** Embeddings
+
+This truncates the embeddings for the purpose of easy reading in this document.
+
+#+begin_src emacs-lisp
+(let* ((response (ollama-generate-embeddings "nomic-embed-text" "What is the airspeed velocity of an unladen swallow?"))
+       (embedding (alist-get 'embedding response)) ; Assuming response is already an alist
+       (truncated-embedding (seq-take embedding 10))
+       (formatted-embedding (mapconcat (lambda (x) (format "%.4f" x)) truncated-embedding ", ")))
+  (format "((embedding . [%s]))" formatted-embedding))
+#+end_src
+
+: ((embedding . [0.8241, 1.8515, -2.8663, -1.1151, 0.8673, 0.7334, -0.3904, 0.2938, -0.6452, 0.5828, ...]))
+
 
 ** Asynchronous Completions
 This approach will not block your emacs session. However, it will be revised heavily in the near future. I am still working on finding a good usage pattern. At present, it prints the output to a buffer called ~*ollama-output*~.
+*** Completions
 
 Invoking the function:
 
@@ -92,7 +107,6 @@ Invoking the function:
 
   #+end_src
 
-  #+RESULTS:
   : #<buffer  *http localhost:11434*-158912>
 
 Getting the output from the buffer:
@@ -121,6 +135,8 @@ Getting the output from the buffer:
 :  (eval_count . 10)
 :  (eval_duration . 249134000))
 
+*** Chat Completions
+
 
 #+begin_src emacs-lisp
 (async-ollama-generate-chat-completion "mistral:latest"
@@ -130,7 +146,6 @@ Getting the output from the buffer:
              :stream :json-false)
   #+end_src
 
-  #+RESULTS:
   : #<buffer  *http localhost:11434*-667842>
 
 
@@ -158,6 +173,34 @@ Getting the output from the buffer:
 :  (prompt_eval_duration . 265775000)
 :  (eval_count . 20)
 :  (eval_duration . 536168000))
+
+*** Embeddings
+
+#+begin_src emacs-lisp
+(async-ollama-generate-embeddings "nomic-embed-text" "What is the airspeed velocity of an unladen swallow?")
+#+end_src
+
+: #<buffer  *http localhost:11434*-281797>
+
+#+begin_src emacs-lisp
+(let* ((content (with-current-buffer "*ollama-response*"
+                  ;; Capture the buffer's content.
+                  (buffer-string)))
+       ;; Clear the buffer after capturing its content.
+       (response (progn
+                   (with-current-buffer "*ollama-response*"
+                     (erase-buffer))
+                   (json-parse-string content :object-type 'alist)))
+       (embedding (alist-get 'embedding response)) ; Assuming response is already an alist
+       (truncated-embedding (seq-take embedding 10))
+       (formatted-embedding (mapconcat (lambda (x) (format "%.4f" x)) truncated-embedding ", ")))
+  ;; Return formatted string for display in org mode
+  (format "((embedding . [%s]))" formatted-embedding))
+#+end_src
+
+: ((embedding . [0.8241, 1.8515, -2.8663, -1.1151, 0.8673, 0.7334, -0.3904, 0.2938, -0.6452, 0.5828, ...]))
+
+
 ** List Models
 
 #+begin_src emacs-lisp
@@ -274,7 +317,7 @@ Added defuns for (1) listing models; (2)
 ** [2024-02-25 Sun]
 I revised the async function calls to use the ~url~ library instead of calling on ~curl~. Currently the async requests print the json output to a buffer; a callback can be used to determine what is done with the output. I am still thinking about the best usage pattern here but the ability to define custom callbacks should offer some flexibility.
 ** [2024-02-24 Sat]
-I updated the examples in the readme for soem clarity. Next big step is still to refactor the asynchronouc calls and think of a better usage pattern. I also need to add support for embeddings models.
+I updated the examples in the readme for some clarity. Next big step is still to refactor the asynchronous calls and think of a better usage pattern. I also need to add support for embeddings models.
 ** [2024-02-10 Sat]
 I have basic working versions of synchronous and asynchronous calls to the ~generate~ and ~chat~ endpoints, along with examples in the readme.
 
