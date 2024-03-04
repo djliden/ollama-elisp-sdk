@@ -227,3 +227,32 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
       (message "%s" (buffer-string))
       (kill-buffer)
       nil)))
+
+(defun ollama-pull-model (name &optional insecure)
+  "Downloads a model from the ollama library asynchronously."
+  (let* ((url (concat ollama-api-base-url "pull"))
+         (url-request-method "POST")
+         (url-request-extra-headers
+          '(("Content-Type" . "application/json")))
+         (url-request-data
+          (json-encode
+           `(("name" . ,name)
+             ,@
+             (when insecure
+               '(("insecure" . t)))
+             ("stream" . :json-false)))))
+    (url-retrieve
+     url
+     (lambda (status)
+       (goto-char (point-min))
+       (if (re-search-forward "^HTTP/.* \\([0-9]+\\)" nil t)
+           (let ((code (string-to-number (match-string 1))))
+             (cond
+              ((= code 200)
+               (search-forward "\n\n" nil t)
+               (message "Model pull successful: %s" (buffer-string)))
+              (t
+               (message "Model pull failed with code: %s" code))))
+         (message "Model pull failed: No HTTP response code found."))
+       (kill-buffer))
+     nil t)))

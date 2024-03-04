@@ -307,6 +307,32 @@ And now we can list our models to verify that we have deleted the copied model
 : mistral-copy:latest
 : starcoder:3b
 
+** Pull a model (Download from Ollama library)
+
+#+begin_src emacs-lisp
+(ollama-pull-model "gemma:2b-instruct")
+#+end_src
+
+#+RESULTS:
+: #<buffer  *http localhost:11434*-51545>
+
+#+begin_src emacs-lisp
+(let
+    ((models-alist (ollama-list-models)) ; Assuming this returns the full structure
+     (output ""))
+  ;; Access the list of models specifically
+  (dolist (model (cdr (assoc 'models models-alist)) output)
+    ;; Now `model` is each individual model's alist, so we extract the name correctly
+    (let ((name (cdr (assoc 'name model))))
+      (setq output (concat output (format "%s\n" name)))))
+  output)
+#+end_src
+
+: codellama:7b-code
+: gemma:2b-instruct
+: mistral:latest
+: nomic-embed-text:latest
+: starcoder:3b
 
 
 * Project Status
