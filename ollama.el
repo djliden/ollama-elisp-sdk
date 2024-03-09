@@ -64,8 +64,10 @@ Include validation to ensure either `prompt` or `messages` is provided, not both
     ,@
     (when (plist-member args :options)
       `(("options" . ,(plist-get args :options))))
-    ("stream" . :json-false)))
-
+    ("stream" .
+     ,(if (plist-member args :stream)
+          (plist-get args :stream)
+        :json-false))))
 
 (defun ollama-generate-completion (model prompt &rest args)
   "Generate completions using the Ollama API synchronously.
