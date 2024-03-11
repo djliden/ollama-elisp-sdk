@@ -118,3 +118,15 @@
 
 #+RESULTS:
 : ((embedding . [0.8241, 1.8515, -2.8663, -1.1151, 0.8673, 0.7334, -0.3904, 0.2938, -0.6452, 0.5828, ...]))
+* Working on Streaming
+
+#+begin_src emacs-lisp
+(async-ollama-generate-completion
+ "mistral:latest"
+ "why is the sky blue?"
+ :stream t
+ :options '(:num_predict 10))
+#+end_src
+
+#+RESULTS:
+: #<buffer  *http localhost:11434*-193656>

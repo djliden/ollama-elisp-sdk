@@ -101,6 +101,16 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
     ))
 
 
+(defun ollama-format-store-response-callback (response)
+  "Parse Ollama API response JSON and store it in a dedicated buffer as an alist."
+  (with-current-buffer (get-buffer-create ollama-response-buffer)
+    (erase-buffer)
+    (let ((json-response
+           (json-parse-string response :object-type 'alist)))
+      (prin1 json-response (current-buffer))
+      )))
+
+
 (defun ollama-async-request (endpoint payload callback)
   "Send an asynchronous request to the Ollama API using url-retrieve, returning raw JSON."
   (let* ((url (concat ollama-api-base-url endpoint))
@@ -135,11 +145,18 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
 
 (defun async-ollama-generate-completion (model prompt &rest args)
   "Generate completions using the Ollama API.
-MODEL and PROMPT are required. ARGS is a plist for optional parameters."
-  (let* ((args (plist-put args :prompt prompt))
-         (generate-args (apply #'ollama-construct-args model args)))
-    (ollama-async-request
-     "generate" generate-args #'ollama-store-response-callback)))
+MODEL and PROMPT are required. ARGS is a plist for optional parameters.
+An optional callback function can be provided via :callback keyword."
+  ;; Check for :callback in args or use 'ollama-store-response-callback' by default
+  (let ((callback
+         (or (plist-get args :callback)
+             #'ollama-store-response-callback)))
+    (setq args (plist-put args :callback nil))
+    (let ((generate-args
+           (apply #'ollama-construct-args
+                  model
+                  (cons :prompt (cons prompt args)))))
+      (ollama-async-request "generate" generate-args callback))))
 
 
 (defun async-ollama-generate-chat-completion (model messages &rest args)

@@ -135,6 +135,38 @@ Getting the output from the buffer:
 :  (eval_count . 10)
 :  (eval_duration . 249134000))
 
+The async request supports different callbacks. Here, for example, we use the ~ollama-format-store-response~ to print the alist-formatted response to a buffer rather than the raw json.
+
+#+begin_src emacs-lisp
+(async-ollama-generate-completion
+ "mistral:latest"
+ "why is the sky pink?"
+ :options '(:num_predict 10)
+ :callback #'ollama-format-store-response-callback
+ )
+#+end_src
+
+#+RESULTS:
+: #<buffer  *http localhost:11434*-11263>
+
+#+begin_src emacs-lisp
+(with-current-buffer "*ollama-response*"
+  (let ((response (read (buffer-string))))
+    (pp response)))
+#+end_src
+
+: ((model . "mistral:latest")
+:  (created_at . "2024-03-10T23:59:28.81514Z")
+:  (response . " The pink color of the sky during sunrise or")
+:  (done . t)
+:  (context .
+:           [733 16289 28793 28705 2079 349 272 7212 12937 28804 733 28748 16289 28793 415 12937 3181 302 272 7212 1938 4376 24035 442])
+:  (total_duration . 470517916)
+:  (load_duration . 2577791)
+:  (prompt_eval_duration . 165903000)
+:  (eval_count . 10)
+:  (eval_duration . 301058000))
+
 *** Chat Completions
 
 
