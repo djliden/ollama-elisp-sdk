@@ -368,6 +368,8 @@ And now we can list our models to verify that we have deleted the copied model
 
 
 * Project Status
+** [2024-03-23 Sat]
+Added defun for push model. I haven't tested this one yet.
 ** [2024-02-27 Tue]
 Added defuns for copying and deleting models.
 ** [2024-02-26 Mon]
