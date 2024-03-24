@@ -4,9 +4,6 @@
 
 ;; copyright (C) 2024 Daniel Liden
 
-;; http://localhost:11434/api/generate
-
-
 (defcustom ollama-api-base-url "http://localhost:11434/api/"
   "Base URL for the Ollama API."
   :type 'string
@@ -17,12 +14,12 @@
   :group 'applications)
 
 
-
 (defun ollama-request (endpoint payload)
   "Send a synchronous request to the Ollama API."
   (let ((url (concat ollama-api-base-url endpoint))
         (url-request-method "POST")
-        (url-request-extra-headers '(("Content-Type" . "application/json")))
+        (url-request-extra-headers
+         '(("Content-Type" . "application/json")))
         (url-request-data (json-encode payload)))
     ;; Send the request
     (with-current-buffer (url-retrieve-synchronously url)
@@ -89,7 +86,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
   (let* ((args (plist-put args :prompt prompt))
          (embed-args (apply #'ollama-construct-args model args)))
     (ollama-request "embeddings" embed-args)))
-  
+
 
 (defvar ollama-response-buffer "*ollama-response*")
 
@@ -97,8 +94,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
   "Store the Ollama API response in a dedicated buffer."
   (with-current-buffer (get-buffer-create ollama-response-buffer)
     (erase-buffer)
-    (insert (format "%s" response))
-    ))
+    (insert (format "%s" response))))
 
 
 (defun ollama-format-store-response-callback (response)
@@ -107,8 +103,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
     (erase-buffer)
     (let ((json-response
            (json-parse-string response :object-type 'alist)))
-      (prin1 json-response (current-buffer))
-      )))
+      (prin1 json-response (current-buffer)))))
 
 
 (defun ollama-async-request (endpoint payload callback)
@@ -159,7 +154,8 @@ An optional callback function can be provided via :callback keyword."
       (ollama-async-request "generate" generate-args callback))))
 
 
-(defun async-ollama-generate-chat-completion (model messages &rest args)
+(defun async-ollama-generate-chat-completion
+    (model messages &rest args)
   "Send a chat request to the Ollama API.
 MODEL and MESSAGES are required. ARGS is a plist for optional parameters."
   ;; Construct the JSON payload with required and optional parameters
@@ -214,7 +210,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
               :false-object nil)))
         (kill-buffer)
         model-details))))
-      
+
 (defun ollama-copy-model (source destination)
   "Copies an existing model, assigning the copy a new name."
   (let ((url-request-method "POST")
@@ -237,9 +233,7 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
         (url (concat ollama-api-base-url "delete"))
         (url-request-extra-headers
          '(("Content-Type" . "application/json")))
-        (url-request-data
-         (json-encode
-          `(("name" . ,name)))))
+        (url-request-data (json-encode `(("name" . ,name)))))
     (with-current-buffer (url-retrieve-synchronously url)
       (goto-char (point-min))
       (search-forward "\n\n" nil t)
@@ -285,7 +279,9 @@ MODEL and PROMPT are required. ARGS is a plist for optional parameters."
          (url-request-data
           (json-encode
            `(("name" . ,name)
-             ,@(when insecure '(("insecure" . t)))
+             ,@
+             (when insecure
+               '(("insecure" . t)))
              ("stream" . :json-false)))))
     (url-retrieve
      url
